@@ -6,7 +6,11 @@ const API_KEY = process.env.API_FOOTBALL_KEY;
 
 router.get("/today", async (req, res) => {
   try {
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const today = new Date();
+    const yyyy = today.getUTCFullYear();
+    const mm = String(today.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(today.getUTCDate()).padStart(2, "0");
+    const todayStr = `${yyyy}-${mm}-${dd}`;
 
     const response = await axios.get(
       "https://api.football-data.org/v4/competitions/CL/matches",
@@ -15,8 +19,8 @@ router.get("/today", async (req, res) => {
           "X-Auth-Token": API_KEY,
         },
         params: {
-          dateFrom: today,
-          dateTo: today,
+          dateFrom: todayStr,
+          dateTo: todayStr,
           status: "SCHEDULED",
         },
       }
@@ -32,9 +36,9 @@ router.get("/today", async (req, res) => {
       awayTeamId: match.awayTeam.id,
     }));
 
-    res.json({ matches });
+    res.json(matches); 
   } catch (error) {
-    console.error("Error fetching matches:", error.message);
+    console.error("Error fetching matches:", error.response?.data || error.message);
     res.status(500).json({ error: "Error fetching matches" });
   }
 });
